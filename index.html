@@ -19,39 +19,38 @@
   <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyXAyuMljw32nxvnnVw39uy6u9oU02Lyq8nOKyWGez0FJhf8IJpHLTyROYD_pqJj_QvMQ/exec";
 
-    // Emulator otomatis agar semua kode google.script.run langsung jalan di GitHub Pages
-    window.google = {
-      script: {
-        run: new Proxy({}, {
-          get: function(target, prop) {
-            if (prop === 'withSuccessHandler') {
-              return function(cb) { target._success = cb; return this; };
-            }
-            if (prop === 'withFailureHandler') {
-              return function(cb) { target._failure = cb; return this; };
-            }
-            return function(...args) {
-              var onSuccess = target._success;
-              var onFailure = target._failure;
-              target._success = null;
-              target._failure = null;
-
-              fetch(GAS_URL, {
-                method: "POST",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ action: prop, args: args })
-              })
-              .then(function(res) { return res.json(); })
-              .then(function(data) { if (onSuccess) onSuccess(data); })
-              .catch(function(err) {
-                if (onFailure) onFailure(err);
-                else console.error("GAS Error:", err);
-              });
-            };
+  window.google = {
+    script: {
+      run: new Proxy({}, {
+        get: function(target, prop) {
+          if (prop === 'withSuccessHandler') {
+            return function(cb) { target._success = cb; return this; };
           }
-        })
-      }
-    };
+          if (prop === 'withFailureHandler') {
+            return function(cb) { target._failure = cb; return this; };
+          }
+          return function(...args) {
+            var onSuccess = target._success;
+            var onFailure = target._failure;
+            target._success = null;
+            target._failure = null;
+
+            fetch(GAS_URL, {
+              method: "POST",
+              headers: { "Content-Type": "text/plain;charset=utf-8" },
+              body: JSON.stringify({ action: prop, args: args })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { if (onSuccess) onSuccess(data); })
+            .catch(function(err) {
+              if (onFailure) onFailure(err);
+              else console.error("GAS Error:", err);
+            });
+          };
+        }
+      })
+    }
+  };
     
     tailwind.config = {
     tailwind.config = {
