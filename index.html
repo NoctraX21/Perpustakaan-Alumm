@@ -18,60 +18,25 @@
 
   <script>
   const GAS_URL = "https://script.google.com/macros/s/AKfycbyXAyuMljw32nxvnnVw39uy6u9oU02Lyq8nOKyWGez0FJhf8IJpHLTyROYD_pqJj_QvMQ/exec";
-
-  window.google = {
-    script: {
-      run: new Proxy({}, {
-        get: function(target, prop) {
-          if (prop === 'withSuccessHandler') {
-            return function(cb) { target._success = cb; return this; };
-          }
-          if (prop === 'withFailureHandler') {
-            return function(cb) { target._failure = cb; return this; };
-          }
-          return function(...args) {
-            var onSuccess = target._success;
-            var onFailure = target._failure;
-            target._success = null;
-            target._failure = null;
-
-            fetch(GAS_URL, {
-              method: "POST",
-              headers: { "Content-Type": "text/plain;charset=utf-8" },
-              body: JSON.stringify({ action: prop, args: args })
-            })
-            .then(function(res) { return res.json(); })
-            .then(function(data) { if (onSuccess) onSuccess(data); })
-            .catch(function(err) {
-              if (onFailure) onFailure(err);
-              else console.error("GAS Error:", err);
-            });
-          };
-        }
-      })
-    }
-  };
-    
-    tailwind.config = {
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#ecfdf5',
-              100: '#d1fae5',
-              500: '#10b981',
-              600: '#059669',
-              700: '#047857',
-              800: '#065f46',
-              900: '#064e3b'
-            }
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          brand: {
+            50: '#ecfdf5',
+            100: '#d1fae5',
+            500: '#10b981',
+            600: '#059669',
+            700: '#047857',
+            800: '#065f46',
+            900: '#064e3b'
           }
         }
       }
     }
-  </script>
+  }
+</script>
 
   <style>
     /* ======================================================== */
@@ -1601,19 +1566,39 @@
   <!-- ============================================================ -->
   <script>
     // State Aplikasi
-    var appState = {
-      isAdmin: false,
-      currentUser: '',
-      namaPerpustakaan: 'Perpustakaan Al-Umm',
-      currentView: 'katalog',
-      bukuList: [],
-      eksamplarList: [],
-      polaList: [],
-      lokasiList: [],
-      filterJenis: 'semua',
-      filterDDC: 'semua',
-      selectedLabels: new Set()
-    };
+    var google = {
+  script: {
+    run: new Proxy({}, {
+      get: function(target, prop) {
+        if (prop === 'withSuccessHandler') {
+          return function(cb) { target._success = cb; return this; };
+        }
+        if (prop === 'withFailureHandler') {
+          return function(cb) { target._failure = cb; return this; };
+        }
+        return function() {
+          var args = Array.prototype.slice.call(arguments);
+          var onSuccess = target._success;
+          var onFailure = target._failure;
+          target._success = null;
+          target._failure = null;
+
+          fetch(GAS_URL, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: prop, args: args })
+          })
+          .then(function(res) { return res.json(); })
+          .then(function(data) { if (onSuccess) onSuccess(data); })
+          .catch(function(err) {
+            if (onFailure) onFailure(err);
+            else console.error("GAS Error:", err);
+          });
+        };
+      }
+    })
+  }
+};
 
     // Inisialisasi saat window dimuat
     window.addEventListener('DOMContentLoaded', function() {
